@@ -1,3 +1,2 @@
 # .gitignore
-# Add .env file containing the API here
 .env
