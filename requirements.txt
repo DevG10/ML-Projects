@@ -1,5 +1,8 @@
-numpy
-pandas
-matplotlib
-scikit-learn
-seabor
+langchain
+streamlit  
+streamlit-chat
+sentence-transformers 
+python-dotenv
+pinecone-client
+openai
+utils
