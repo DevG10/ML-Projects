@@ -11,7 +11,6 @@ from utils import *
 from openai import OpenAI
 import os
 
-# openai.api_key = os.getenv("OPENAI_API_KEY")
 load_dotenv()
 client = OpenAI()
 st.set_page_config(page_title='Ayurveda Chatbot', page_icon=':herb:')
@@ -24,6 +23,15 @@ with st.sidebar:
         ''')
     st.write('Made with ❤️ by [Team Ayurmarg](https://www.youtube.com/watch?v=6_fYrOHm7QE&t=13s)')
 
+    st.write('Popular Books used for training:')
+    st.write('''
+        - [Charak Samhita](https://www.wisdomlib.org/hinduism/book/charaka-samhita-english)
+        - [Sushruta Samhita](https://www.wisdomlib.org/hinduism/book/sushruta-samhita-volume-1-sutrasthana)
+        - [Ashtanga Hridaya](https://www.planetayurveda.com/ayurveda-ebooks/astanga-hridaya-sutrasthan-handbook.pdf)
+        
+        ''')
+    st.info('**Note:** As this bot is trained on Ayurveda books so it can answer questions **only related to Ayurveda**')
+    st.error("This bot is **not a substitute for a doctor**. Please  don't rely solely on this bot!.")
 
 
 if 'responses' not in st.session_state:
@@ -31,19 +39,34 @@ if 'responses' not in st.session_state:
 if 'requests' not in st.session_state:
     st.session_state['requests'] = []
     
-llm = ChatOpenAI(model_name = "gpt-3.5-turbo")
+@st.cache_resource(show_spinner=False)
+def load_model():
+    llm = ChatOpenAI(model_name = "gpt-3.5-turbo")
+    return llm
 
-if 'buffer_mmeory' not in st.session_state:
-    st.session_state.buffer_mmeory = ConversationBufferWindowMemory(k = 3, return_messages = True)
+# llm = ChatOpenAI(model_name = "gpt-3.5-turbo")
+
+if 'buffer_memory' not in st.session_state:
+    st.session_state.buffer_memory = None
     
-system_msg_template = SystemMessagePromptTemplate.from_template(template = """Answer the question as truthfully as possible using the provided context, and if the answer is not contained within the text below, say 'As an Ayurvedic assistant, I can only answer questions related to Ayurveda.' else if the user is askign for greeting messages you can greet him too nicely""")
+if st.session_state.buffer_memory is None:
+    st.session_state.buffer_memory = ConversationBufferWindowMemory(k=3, return_messages=True)
+    
+
+
+    
+system_msg_template = SystemMessagePromptTemplate.from_template(template = """Answer the question as truthfully as possible using the provided context, and if the answer is not contained within the text below, say 'As an Ayurvedic assistant, I can only answer questions related to Ayurveda.' else if the user is askign for greeting messages you can greet him back with a greeting message.""")
 
 human_msg_template = HumanMessagePromptTemplate.from_template(template = "{input}")
 
 prompt_template = ChatPromptTemplate.from_messages([system_msg_template, MessagesPlaceholder(variable_name = "history"), human_msg_template])
 
+if 'conversation_chain' not in st.session_state:
+    st.session_state.conversation_chain = ConversationChain(memory=st.session_state.buffer_memory, prompt=prompt_template, llm=load_model(), verbose=False)
 
-conversation = ConversationChain(memory = st.session_state.buffer_mmeory, prompt = prompt_template, llm = llm, verbose = False)
+conversation = st.session_state.conversation_chain
+
+# conversation = ConversationChain(memory = st.session_state.buffer_mmeory, prompt = prompt_template, llm = llm, verbose = False)
 
 response_container = st.container()
 text_container = st.container()
@@ -54,13 +77,29 @@ pc = PineconeGRPC(api_key=os.getenv("PINECONE_API_KEY"))
 
 index = pc.Index('ayurveda-chatbot')
 
+if st.session_state.buffer_memory is None:
+    st.session_state.buffer_memory = ConversationBufferWindowMemory(k=3, return_messages=True)
 
+
+@st.cache_data(show_spinner=False)
 def find_match(input):
     input_em = model.encode(input).tolist()
-    result = index.query(input_em, top_k = 2, include_metadata = True)
-    return result['matches'][0]['metadata']['text']+"\n"+result['matches'][1]['metadata']['text']
+    result = index.query(input_em, top_k=20, include_metadata=True)
+
+    if 'metadata' in result['matches'][0] and 'text' in result['matches'][0]['metadata']:
+        text1 = result['matches'][0]['metadata']['text']
+    else:
+        text1 = "No text in metadata for match 1"
+
+    if 'metadata' in result['matches'][1] and 'text' in result['matches'][1]['metadata']:
+        text2 = result['matches'][1]['metadata']['text']
+    else:
+        text2 = "No text in metadata for match 2"
+
+    return text1 + "\n" + text2
 
 
+@st.cache_data(show_spinner=False)
 def query_refiner(conversation, query):
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
@@ -74,37 +113,55 @@ def query_refiner(conversation, query):
         frequency_penalty=0,
         presence_penalty=0
     )
+    st.spinner(text="")
     return response.choices[0].message.content
 
 def get_conversation_string():
-    conversation_string = ""
+    conversation_string = []
     for i in range(len(st.session_state['responses']) - 1):        
-        conversation_string += "Human: "+st.session_state['requests'][i] + "\n"
-        conversation_string += "Bot: "+ st.session_state['responses'][i+1] + "\n"
-    return conversation_string
+        conversation_string.append("Human: "+st.session_state['requests'][i])
+        conversation_string.append("Bot: "+ st.session_state['responses'][i+1])
+    return '\n'.join(conversation_string)
 
 if 'user_input' not in st.session_state:
     st.session_state.user_input = ""
+    
+prebuilt_questions = [
+    "What are the benefits of Ayurvedic herbs?",
+    "How can Ayurveda help with stress relief?",
+    "Tell me about Ayurvedic dietary recommendations.",
+]
 
-with text_container:
+user_choice = st.radio("Choose an option:", ["Enter your own query", "Select an example question"])
+
+if user_choice == "Enter your own query":
+    # Allow the user to enter a custom query
     query = st.text_input("How may I help you? ", key="input")
-    if query:
-        with st.spinner("Generating the response..."):
+    if st.button("Generate Response"):
+        with st.spinner("Generating personalized response..."):
             conversation_string = get_conversation_string()
-            st.code(conversation_string)
             refined_query = query_refiner(conversation_string, query)
             context = find_match(refined_query)
             response = conversation.predict(input=f"Context: \n {context} \n\n Query: \n {query}")
             st.session_state.requests.append(query)
             st.session_state.responses.append(response)
-            st.session_state.user_input = ""
 
-with response_container:
-    if st.session_state['responses']:
+elif user_choice == "Select an example question":
+    # Allow the user to choose a pre-built question
+    selected_question = st.selectbox("Choose a pre-built question:", prebuilt_questions)
+    if st.button("Generate Response"):
+        with st.spinner("Generating response..."):
+            refined_query = query_refiner(selected_question, selected_question)
+            context = find_match(refined_query)
+            response = conversation.predict(input=f"Context: \n {context} \n\n Query: \n {selected_question}")
+            st.session_state.requests.append(selected_question)
+            st.session_state.responses.append(response)
 
-        
-        for i in range(len(st.session_state['responses'])):
-            message(st.session_state['responses'][i], key = str(i))
-            if i < len(st.session_state['requests']):
-                message(st.session_state['requests'][i], is_user = True, key = str(i) + '_user')
+    with response_container:
+        if st.session_state['responses']:
+
             
+            for i in range(len(st.session_state['responses'])):
+                message(st.session_state['responses'][i], key = str(i))
+                if i < len(st.session_state['requests']):
+                    message(st.session_state['requests'][i], is_user = True, key = str(i) + '_user')

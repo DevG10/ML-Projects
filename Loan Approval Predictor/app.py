@@ -45,10 +45,10 @@ property_area = st.selectbox("Select Property Area", ["Urban", "Semiurban", "Rur
 print("Value of dependents:", dependents)
 
 # Encoding the categorical values
-with open('C:\\Users\\devgo\\ML-Projects\\Loan Approval Predictor\\model\\label_encoder.pkl', "rb") as file:
+with open(r'D:\Computer_Programming\Python\ML-Projects\Loan Approval Predictor\model\label_encoder.pkl', "rb") as file:
     label_encoder = pickle.load(file)
 
-with open('C:\\Users\\devgo\\ML-Projects\\Loan Approval Predictor\\model\\ordinal_encoder.pkl', "rb") as file:
+with open('D:\Computer_Programming\Python\ML-Projects\Loan Approval Predictor\model\ordinal_encoder.pkl', "rb") as file:
     ordinal_encoder = pickle.load(file)
 
 gender_encoded = label_encoder.transform([[gender]])
@@ -69,7 +69,7 @@ education_encoded = education_encoded.flatten()
 credit_history_encoded = credit_history_encoded.flatten()
 
 # Scaling the values
-with open('C:\\Users\\devgo\\ML-Projects\\Loan Approval Predictor\\model\\scaler_encoder.pkl', "rb") as file:
+with open(r'D:\Computer_Programming\Python\ML-Projects\Loan Approval Predictor\model\scaler_encoder.pkl', "rb") as file:
     scaler = pickle.load(file)
 
 encoded_features = [
@@ -89,7 +89,7 @@ encoded_features = [
 scaled_data = scaler.transform([encoded_features])
 
 # Predicting the approval status
-with open('C:\\Users\\devgo\\ML-Projects\\Loan Approval Predictor\model\\model.pkl', "rb") as file:
+with open(r'D:\Computer_Programming\Python\ML-Projects\Loan Approval Predictor\model\model.pkl', "rb") as file:
     model = pickle.load(file)
 
 result = model.predict(scaled_data)
