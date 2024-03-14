@@ -6,3 +6,4 @@ python-dotenv
 sentence-transformers
 pinecone-client
 pinecone-client[grpc]
+python-utils
