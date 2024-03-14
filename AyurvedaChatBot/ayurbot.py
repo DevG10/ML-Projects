@@ -10,7 +10,6 @@ from pinecone.grpc import PineconeGRPC
 from utils import *
 from openai import OpenAI
 import os
-
 load_dotenv()
 client = OpenAI()
 st.set_page_config(page_title='Ayurveda Chatbot', page_icon=':herb:')
@@ -55,7 +54,7 @@ if st.session_state.buffer_memory is None:
 
 
     
-system_msg_template = SystemMessagePromptTemplate.from_template(template = """Answer the question as truthfully as possible using the provided context, and if the answer is not contained within the text below, say 'As an Ayurvedic assistant, I can only answer questions related to Ayurveda.' else if the user is asking for greeting messages you can greet him back with a greeting message.""")
+system_msg_template = SystemMessagePromptTemplate.from_template(template = """Answer the question as truthfully as possible using the provided context, and if the answer is not contained within the text below, say 'As an Ayurvedic assistant, I can only answer questions related to Ayurveda.' else if the user is askign for greeting messages you can greet him back with a greeting message.""")
 
 human_msg_template = HumanMessagePromptTemplate.from_template(template = "{input}")
 
@@ -107,7 +106,7 @@ def query_refiner(conversation, query):
         {"role": "user", "content": f"Context: {conversation}"},
         {"role": "assistant", "content": f"Query: {query}"}],
 
-        temperature=0.1,
+        temperature=0.5,
         max_tokens=256,
         top_p=1,
         frequency_penalty=0,
@@ -125,43 +124,24 @@ def get_conversation_string():
 
 if 'user_input' not in st.session_state:
     st.session_state.user_input = ""
-    
-prebuilt_questions = [
-    "What are the benefits of Ayurvedic herbs?",
-    "How can Ayurveda help with stress relief?",
-    "Tell me about Ayurvedic dietary recommendations.",
-]
 
-user_choice = st.radio("Choose an option:", ["Enter your own query", "Select an example question"])
-
-if user_choice == "Enter your own query":
-    # Allow the user to enter a custom query
+with text_container:
     query = st.text_input("How may I help you? ", key="input")
-    if st.button("Generate Response"):
+    if query:
         with st.spinner("Generating personalized response..."):
             conversation_string = get_conversation_string()
+            # st.code(conversation_string)
             refined_query = query_refiner(conversation_string, query)
             context = find_match(refined_query)
             response = conversation.predict(input=f"Context: \n {context} \n\n Query: \n {query}")
             st.session_state.requests.append(query)
             st.session_state.responses.append(response)
 
-elif user_choice == "Select an example question":
-    # Allow the user to choose a pre-built question
-    selected_question = st.selectbox("Choose a pre-built question:", prebuilt_questions)
-    if st.button("Generate Response"):
-        with st.spinner("Generating response..."):
-            refined_query = query_refiner(selected_question, selected_question)
-            context = find_match(refined_query)
-            response = conversation.predict(input=f"Context: \n {context} \n\n Query: \n {selected_question}")
-            st.session_state.requests.append(selected_question)
-            st.session_state.responses.append(response)
+with response_container:
+    if st.session_state['responses']:
 
-    with response_container:
-        if st.session_state['responses']:
-
-            
-            for i in range(len(st.session_state['responses'])):
-                message(st.session_state['responses'][i], key = str(i))
-                if i < len(st.session_state['requests']):
-                    message(st.session_state['requests'][i], is_user = True, key = str(i) + '_user')
+        
+        for i in range(len(st.session_state['responses'])):
+            message(st.session_state['responses'][i], key = str(i))
+            if i < len(st.session_state['requests']):
+                message(st.session_state['requests'][i], is_user = True, key = str(i) + '_user')
