@@ -5,3 +5,4 @@ openai
 python-dotenv
 sentence-transformers
 pinecone-client
+pinecone-client[grpc]
