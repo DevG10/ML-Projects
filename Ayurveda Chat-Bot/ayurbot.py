@@ -7,7 +7,6 @@ from streamlit_chat import message
 from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
 from pinecone.grpc import PineconeGRPC
-from utils import *
 from openai import OpenAI
 import os
 load_dotenv()
