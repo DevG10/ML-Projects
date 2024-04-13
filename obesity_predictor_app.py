@@ -197,6 +197,7 @@ if st.button('Get the results', help = 'Predict the results'):
         st.write(stream_words(overweight_2))
     elif prediction == 'Obesity_Type_I':
         st.write(stream_words(obesity_type_1))
+        rain_fun()
     elif prediction == 'Obesity_Type_II':
         st.write(stream_words(obesity_type_2))
     elif prediction == 'Obesity_Type_III':
