@@ -8,7 +8,7 @@ load_dotenv()
 
 def rain_fun():
     rain(
-        emoji="💩",
+        emoji="🥲",
         font_size=50,
         falling_speed=6,
         animation_length=3
