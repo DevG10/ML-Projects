@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from pinecone.grpc import PineconeGRPC
 from openai import OpenAI
 import os
-load_dotenv()
+load_dotenv("D:/Computer Programming/Python/ML-Projects/AyurvedaChatBot/.env")
 client = OpenAI()
 st.set_page_config(page_title='Ayurveda Chatbot', page_icon=':herb:')
 st.header('Ayurvedic chatbot for a healthy routine :herb:')
@@ -143,8 +143,5 @@ with response_container:
         for i in range(len(st.session_state['responses'])):
             message(st.session_state['responses'][i], key = str(i))
             if i < len(st.session_state['requests']):
-<<<<<<< HEAD:Ayurveda Chat-Bot/ayurbot.py
                 message(st.session_state['requests'][i], is_user = True, key = str(i) + '_user')
-=======
                 message(st.session_state['requests'][i], is_user = True, key = str(i) + '_user')
->>>>>>> 848a7bae6701fa57818634de8efc43a6f93a1f1d:AyurvedaChatBot/ayurbot.py
