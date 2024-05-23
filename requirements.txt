@@ -5,8 +5,5 @@ openai
 python-dotenv
 sentence-transformers
 pinecone-client
-<<<<<<< HEAD:Ayurveda Chat-Bot/requirements.txt
 pinecone-client[grpc]
 python-utils
-=======
->>>>>>> 848a7bae6701fa57818634de8efc43a6f93a1f1d:requirements.txt
