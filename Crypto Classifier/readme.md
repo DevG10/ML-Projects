@@ -37,7 +37,7 @@ The Crypto Classifier is a machine learning pipeline designed to accurately clas
 Install required libraries using pip:
 
 ```bash
-pip install pandas scikit-learn xgboost streamlit
+pip install -r requirements.txt
 ```
 ## Installation
 
