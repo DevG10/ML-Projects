@@ -107,9 +107,6 @@ def query_refiner(conversation, query):
 
         temperature=0.5,
         max_tokens=256,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0
     )
     st.spinner(text="")
     return response.choices[0].message.content

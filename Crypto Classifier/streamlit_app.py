@@ -1,8 +1,14 @@
 import streamlit as st
 import pickle
 import pandas as pd
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+
 st.set_page_config("Cryptocurrency Address Classifier", page_icon="🔒")
-@st.cache_resource
+
+@st.cache_resource(show_spinner=False)
 def load_model(model_path, scaler_path, encoder_path, model_encoder):
     with open(model_path, 'rb') as f:
         model = pickle.load(f)
@@ -10,8 +16,9 @@ def load_model(model_path, scaler_path, encoder_path, model_encoder):
         scaler = pickle.load(f)
     with open(encoder_path, 'rb') as f:
         encoder = pickle.load(f)
-    with open(model_encoder_path, 'rb') as f:
+    with open(model_encoder, 'rb') as f:
         model_encoder = pickle.load(f)
+        
     return model, scaler, encoder, model_encoder
 
 def preprocess_input(address):
@@ -28,16 +35,17 @@ def classify_address(model, address, encoder):
     class_name = encoder.inverse_transform([prediction[0]])
     return class_name[0]
 
-model_path = r'D:\Computer Programming\Python\ML-Projects\Crypto Classification\models\crypto_classification_model.pkl'
-scaler_path = r'D:\Computer Programming\Python\ML-Projects\Crypto Classification\models\crypto_scaler.pkl'
-encoder_path = r'D:\Computer Programming\Python\ML-Projects\Crypto Classification\models\crypto_label_encoder.pkl'
-model_encoder_path = r'D:\Computer Programming\Python\ML-Projects\Crypto Classification\Notebook\xgboost_encoder.pkl'
-model, scaler, encoder, model_encoder = load_model(model_path, scaler_path, encoder_path, model_encoder_path)
+encoder_path = os.getenv("ENCODER_PATH")
+model_path = os.getenv("MODEL_PATH")
+scaler_path = os.getenv("SCALER_PATH")
+xg_encoder_path = os.getenv("XG_ENCODER")
+
+model, scaler, encoder, model_encoder = load_model(model_path, scaler_path, encoder_path, xg_encoder_path)
 
 
 st.title("Cryptocurrency Address Classifier")
 st.markdown("Available Cryptos that could be classified:")
-st.markdown("1. Bitcoin (BTC)" "2. Ethereum(ETH)" "3. Doge Coin" "4. Dash" "5. Lite Coin" "6. Zilliqa" "7. Polygon")
+st.markdown("1. Bitcoin (BTC) " "2. Ethereum(ETH) " "3. Doge Coin " "4. Dash " "5. Lite Coin " "6. Zilliqa " "7. Polygon")
 address_input = st.text_input("Enter a cryptocurrency address:")
 if st.button("Classify"):
     if address_input:
