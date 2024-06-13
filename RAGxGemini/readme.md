@@ -1,5 +1,5 @@
 ![alt text](https://drive.google.com/uc?export=view&id=1hgH4SnXSHDueRjOwp_G6ZlhsQwfVobTy)
-
+#### [Link to the RAG Model](https://ragwithgemini.streamlit.app/)
 ## Introduction
 
 This project aims to build a Retrieval-Augmented Generation (RAG) model using Gemini Pro with Google Generative AI. The model is designed to provide relevant answers to user queries based on a structured dataset.
