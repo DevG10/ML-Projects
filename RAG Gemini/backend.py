@@ -15,6 +15,7 @@ load_dotenv()
 api_key = os.getenv("GOOGLE_API_KEY")
 genai.configure(api_key=api_key)
 
+#The below function work was to calculate the embeddings and save it locally. THis was for one time use that is why I have commented it out. Uncomment if you are running code for the first time.
 
 # Reading the created dataset
 # data = pd.read_excel('dataset_rag.xlsx')
