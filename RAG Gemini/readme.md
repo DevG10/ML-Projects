@@ -1,4 +1,4 @@
-![image](https://github.com/DevG10/ML-Projects/assets/115708950/656375ca-da91-410d-8f9d-9f7d9d9d10b8)# RAG with power of Google's Gemini Pro
+![alt text](https://drive.google.com/uc?export=view&id=1pIZdQGr16e3bz0Gs7rGWhHZZMRlcWI9Q)
 
 ## Introduction
 
