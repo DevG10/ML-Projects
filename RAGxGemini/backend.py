@@ -45,7 +45,7 @@ def get_conversation_chain():
 
 def user_input(question):
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    vector_data = FAISS.load_local('faiss_indexes', embeddings, allow_dangerous_deserialization=True)
+    vector_data = FAISS.load_local('RAGxGemini/faiss_indexes', embeddings, allow_dangerous_deserialization=True)
     query_embedding = embeddings.embed_query(question)
     docs = vector_data.similarity_search_by_vector(query_embedding)
     chain = get_conversation_chain()
