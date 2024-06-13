@@ -53,9 +53,5 @@ def user_input(question):
         {"input_documents": docs, "question": question},
         return_only_outputs=True
     )
-    print(response)
+    return response
 
-
-if __name__ == "__main__":
-    question = "I want to change my policy"
-    user_input(question)
